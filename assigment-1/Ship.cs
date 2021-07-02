@@ -32,7 +32,7 @@ namespace assignment1 {
 
         private bool validLoc(int row, int col) {
             // create new gameboard only for checking lengths
-            Gameboard board = new Gameboard(false);
+            Gameboard board = new Gameboard();
             if (row < 0 || row > board.GetRowLength() || col < 0 || col > board.GetColLength()) {
                 return false;
             }

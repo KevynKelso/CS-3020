@@ -5,11 +5,14 @@ using System.Text;
 namespace assignment1 {
     class Gameboard {
         private char[,] board = new char[10, 10]; 
-        private bool hacks;
+        private bool hacks = false;
 
-        public Gameboard(bool hacks) {
-            this.hacks = hacks;
+        public Gameboard() {
             ResetBoard();
+        }
+
+        public void ToggleHacks() {
+            this.hacks = !this.hacks;
         }
 
         // Displays the gameboard on the screen with rows as cap letters and
