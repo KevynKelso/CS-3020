@@ -30,123 +30,42 @@ namespace assignment1 {
             int turns = 0;
             int hits = 0;
 
+            Console.WriteLine($"Starting game....\nWhatever you do, don't press Z0.");
             while (hits < hitsToWin && isRunning) {
                 board.Display();
-                hits += PlayerTurn();
+                hits += PlayerTurn() ? 1 : 0;
                 turns++;
             }
 
-            Console.WriteLine($"You won in {turns} turns!\nAccuracy: {hitsToWin / hits * 100}%");
+            Console.WriteLine($"You won in {turns} turns!\nAccuracy: {((double)hitsToWin/turns) * 100}%");
         }
 
-        // creates ship that is not running into a ship. Placement is random
-        public Ship GenerateValidShip(int length) {
-            var rand = new Random();
-            bool vertical = rand.Next(2) == 0;
-            bool colision = true;
-            int colLoc = 0;
-            int rowLoc = 0;
-
-            while (colision) {
-                // if it is vertical, we cant place it length squares away from the bottom
-                if (vertical) { 
-                    rowLoc = rand.Next(0, board.GetRowLength() - length);
-                    colLoc = rand.Next(0, board.GetColLength());
-
-                    colision = setBoardLocation(length, vertical, rowLoc, colLoc);
-                    continue;
-                }
-
-                // otherwise, need to prevent it from hitting the right side
-                rowLoc = rand.Next(0, board.GetRowLength());
-                colLoc = rand.Next(0, board.GetColLength() - length);
-
-                colision = setBoardLocation(length, vertical, rowLoc, colLoc);
-            }
-
-            return new Ship(length, vertical, rowLoc, colLoc);
-        }
-
-        private bool checkColision(int length, bool vertical, int rowLoc, int colLoc) {
-            if (vertical) {
-                for(int i = 0; i < length; i++) {
-                    if (board.GetCell(rowLoc+i, colLoc) == 'S') {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-
-            for(int i = 0; i < length; i++) {
-                if (board.GetCell(rowLoc, colLoc+i) == 'S') {
-                    return true;
-                }
-
-            }
-
-            return false;
-        }
-
-        // If you haven't noticed, I hate using else clauses. In my opinion,
-        // they add clutter to your code.
-        // true = error
-        private bool setBoardLocation(int length, bool vertical, int rowLoc, int colLoc) {
-            // if there's already a ship, we need to error and reverse
-            if (checkColision(length, vertical, rowLoc, colLoc)) {
-                return true;
-            }
-            
-            // start at head location and move down
-            if (vertical) {
-                for(int i = 0; i < length; i++) {
-                    board.SetCell(rowLoc+i, colLoc, 'S');
-                }
-
-                return false;
-            }
-            // otherwise move left to right
-            for(int i = 0; i < length; i++) {
-                board.SetCell(rowLoc, colLoc+i, 'S');
-            }
-
-            return false;
-        }
-
-        private int GenerateShips(int numShips, int length) {
+        // generates a specific type of ship, and calculates total number of hits
+        // on the board for win condition
+        private int GenerateShips(int numShips, ShipTypes length) {
             int hits = 0;
 
             for(int i = 0; i < numShips; i++) {
-                Ship ship = GenerateValidShip(length);
-                hits += length;
+                Ship ship = new Ship(length, board);
+                hits += (int)length;
             }
 
             return hits;
         }
 
+        // places all ships on the board. returns number of 'S' locations for 
+        // win condition
         public int GenerateAllTheShips() {
             int maxHits = 0;
-            int carrierLength = 5;
-            int battleshipLength = 4;
-            int subLength = 3;
-            int destroyerLength = 2;
             // starting with the bigger ships allows more placement options for
             // the smaller ships and less chance of colision having to generate
-            // new random numbers
-            maxHits += GenerateShips(numCarriers, carrierLength);
-            maxHits += GenerateShips(numBattleships, battleshipLength);
-            maxHits += GenerateShips(numSubs, subLength);
-            maxHits += GenerateShips(numDestroyers, destroyerLength);
+            // new random numbers slowing the game down
+            maxHits += GenerateShips(numCarriers, ShipTypes.Carrier);
+            maxHits += GenerateShips(numBattleships, ShipTypes.Battleship);
+            maxHits += GenerateShips(numSubs, ShipTypes.Submarine);
+            maxHits += GenerateShips(numDestroyers, ShipTypes.Destroyer);
 
             return maxHits;
-        }
-
-        // I might get rid of this method and put the loop in Start()
-        public void Update() {
-            while (isRunning) {
-                board.Display();
-                Console.ReadLine();
-            }
         }
 
         // gets coord info from user
@@ -157,17 +76,20 @@ namespace assignment1 {
 
         // ensures user input is within the parameters of the gameboard
         private bool valid(string input) {
+            // basic length check
             if (input.Length < 2 || input.Length > 3) {
                 return false;
             }
 
+            // hacks
             if ((int)(input[0]) == 90 && int.Parse(input.Substring(1)) == 0) {
                 board.ToggleHacks();
                 Console.WriteLine($"|-|@><$ enabled.");
                 return false;
             }
 
-            if ((int)(input[0]-65) < 0 || (int)(input[0]-65) > board.GetRowLength() || 
+            // within board params
+            if ((int)(input[0]-65) < 0 || (int)(input[0]-65) >= board.GetRowLength() || 
                 int.Parse(input.Substring(1)) < 0 || int.Parse(input.Substring(1)) > board.GetColLength()) {
                 return false;
             }
@@ -176,6 +98,7 @@ namespace assignment1 {
             int targetCol = int.Parse(input.Substring(1));
             char cell = board.GetCellUser(targetRow, targetCol);
 
+            // has the user already chosen that location
             if (cell == 'X' || cell == 'O') {
                 Console.WriteLine($"Wow, isn't that horse already dead?");
                 return false;
@@ -184,8 +107,8 @@ namespace assignment1 {
             return true;
         }
 
-        // basic player logic
-        private int PlayerTurn() {
+        // basic player logic, validates input, sets cells on board returns hits
+        private bool PlayerTurn() {
             char targetRow;
             int targetCol;
             char replaceChar = 'X';
@@ -195,7 +118,7 @@ namespace assignment1 {
             string userInput = PromptUser();
             if (!valid(userInput)) {
                 Console.WriteLine($"The input you entered: {userInput} is invalid. Please try again.");
-                return 0;
+                return false;
             }
             
             targetRow = userInput[0];
@@ -211,7 +134,7 @@ namespace assignment1 {
             Console.WriteLine($"{message}");
             board.SetCellUser(targetRow, targetCol, replaceChar);
             
-            return hit ? 1 : 0;
+            return hit;
         }
     }
 }
