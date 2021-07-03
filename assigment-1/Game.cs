@@ -122,6 +122,7 @@ namespace assignment1 {
             return true;
         }
 
+        // just your average helper method 
         private void updateBoard(char replaceChar, String message, char targetRow, int targetCol) {
             Console.WriteLine($"{message}");
             board.SetCellUser(targetRow, targetCol, replaceChar);

@@ -1,0 +1,36 @@
+﻿<Properties StartupConfiguration="{61DE396D-F867-4F5C-A2B6-CCB4EC864969}|Default">
+  <MonoDevelop.Ide.Workbench ActiveDocument="craps/Program.cs">
+    <Files>
+      <File FileName="craps/Program.cs" Line="13" Column="1" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="craps" expanded="True">
+            <Node name="craps" expanded="True">
+              <Node name="Program.cs" selected="True" />
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+      <Pad Id="ClassPad">
+        <State name="__root__">
+          <Node name="craps" expanded="True">
+            <Node name="craps" expanded="True">
+              <Node name="craps" expanded="True">
+                <Node name="craps.Program" selected="True" />
+              </Node>
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.ItemProperties.craps PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MultiItemStartupConfigurations />
+</Properties>
