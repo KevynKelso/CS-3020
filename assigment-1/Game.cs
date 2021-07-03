@@ -30,7 +30,7 @@ namespace assignment1 {
             int turns = 0;
             int hits = 0;
 
-            Console.WriteLine($"Starting game....\nWhatever you do, don't press Z0.");
+            Console.WriteLine($"\n\nStarting game....\nWhatever you do, don't press Z0.");
             while (hits < hitsToWin && isRunning) {
                 board.Display();
                 hits += PlayerTurn() ? 1 : 0;
@@ -38,6 +38,18 @@ namespace assignment1 {
             }
 
             Console.WriteLine($"You won in {turns} turns!\nAccuracy: {((double)hitsToWin/turns) * 100}%");
+            promptPlayAgain();
+        }
+
+        private void promptPlayAgain() {
+            Console.Write($"Play again? [Y/n]:");
+            char input = Convert.ToChar(Console.Read());
+
+            if (input == 'y' || input == 'Y' || input == '\n') {
+                Start();
+            }
+            
+            Console.WriteLine($"\nGoodbye!\n\nWritten by Kevyn Kelso.");
         }
 
         // generates a specific type of ship, and calculates total number of hits
@@ -84,13 +96,13 @@ namespace assignment1 {
             // hacks
             if ((int)(input[0]) == 90 && int.Parse(input.Substring(1)) == 0) {
                 board.ToggleHacks();
-                Console.WriteLine($"|-|@><$ enabled.");
+                Console.WriteLine($"|-|@><$ toggled... This will apply to all other games.");
                 return false;
             }
 
             // within board params
             if ((int)(input[0]-65) < 0 || (int)(input[0]-65) >= board.GetRowLength() || 
-                int.Parse(input.Substring(1)) < 0 || int.Parse(input.Substring(1)) > board.GetColLength()) {
+                int.Parse(input.Substring(1)) <= 0 || int.Parse(input.Substring(1)) > board.GetColLength()) {
                 return false;
             }
 
