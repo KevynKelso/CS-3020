@@ -14,6 +14,8 @@ namespace assignment1 {
         private bool verticalOrientation;
         private int headRow;
         private int headCol;
+        private int hits;
+        private String name;
         private Gameboard board;
 
         // constructs a ship at a valid board location
@@ -24,11 +26,68 @@ namespace assignment1 {
             }
 
             this.length = length;
+
+            switch (length) {
+                case ShipTypes.Destroyer:
+                    this.name = "Destroyer";
+                    break;
+                case ShipTypes.Submarine:
+                    this.name = "Sub";
+                    break;
+                case ShipTypes.Battleship:
+                    this.name = "Battleship";
+                    break;
+                case ShipTypes.Carrier:
+                    this.name = "Carrier";
+                    break;
+            }
+
             this.board = board;
             // sets private variables headRow, headCol, and verticalOrientation
             generateValidShip();
         }
 
+        // checks if the ship is hit, runs logic for how many hits ship has left
+        public bool IsHit(char targetRow, int targetCol) {
+            int rowIdx = (int)targetRow - 65;
+            int colIdx = targetCol - 1;
+
+            if (rowIdx != headRow && colIdx != headCol) {
+                return false;
+            }
+
+            if (verticalOrientation && colIdx == headCol) {
+                for(int i = 0; i < (int)length; i++) {
+                    if (rowIdx == headRow+i) {
+                        hitShip();
+                        return true;
+                    }
+                }
+            }
+
+            if (!verticalOrientation && rowIdx == headRow) {
+                for(int i = 0; i < (int)length; i++) {
+                    if (colIdx == headCol+i) {
+                        hitShip();
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        // logic to make the game more interesting
+        private void hitShip() {
+            hits++;
+            if (hits == (int)length) {
+                Console.WriteLine($"You sunk my {name}!");
+            }
+
+            if (hits == (int)length-1) {
+                Console.WriteLine($"<distant screems>");
+            }
+        }
 
         // creates ship that is not running into a ship. Placement is random
         private void generateValidShip() {
@@ -97,10 +156,6 @@ namespace assignment1 {
             }
 
             return false;
-        }
-
-        public int getHits() {
-            return (int)this.length;
         }
 
         private bool validLength(ShipTypes length) {

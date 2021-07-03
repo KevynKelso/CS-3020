@@ -1,11 +1,12 @@
 using System;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
 
 namespace assignment1 {
     class Game {
         private bool isRunning;
         private Gameboard board = new Gameboard();
-        private Ship[] ships;
+        private List<Ship> ships = new List<Ship>();
         private int numDestroyers;
         private int numSubs;
         private int numBattleships;
@@ -17,23 +18,23 @@ namespace assignment1 {
             this.numSubs = numSubs;
             this.numBattleships = numBattleships;
             this.numCarriers = numCarriers;
-            this.ships = new Ship[numCarriers + numSubs + numBattleships + numDestroyers];
         }
 
         // entry point into the game
         public void Start() {
             board.ResetBoard();
-            PlayerStart(GenerateAllTheShips());
+            playerStart(GenerateAllTheShips());
         }
 
-        private void PlayerStart(int hitsToWin) {
+        // initializes and runs game
+        private void playerStart(int hitsToWin) {
             int turns = 0;
             int hits = 0;
 
             Console.WriteLine($"\n\nStarting game....\nWhatever you do, don't press Z0.");
             while (hits < hitsToWin && isRunning) {
                 board.Display();
-                hits += PlayerTurn() ? 1 : 0;
+                hits += playerTurn() ? 1 : 0;
                 turns++;
             }
 
@@ -41,12 +42,14 @@ namespace assignment1 {
             promptPlayAgain();
         }
 
+        // single character prompt to play again
         private void promptPlayAgain() {
             Console.Write($"Play again? [Y/n]:");
             char input = Convert.ToChar(Console.Read());
 
             if (input == 'y' || input == 'Y' || input == '\n') {
                 Start();
+                return;
             }
             
             Console.WriteLine($"\nGoodbye!\n\nWritten by Kevyn Kelso.");
@@ -54,11 +57,11 @@ namespace assignment1 {
 
         // generates a specific type of ship, and calculates total number of hits
         // on the board for win condition
-        private int GenerateShips(int numShips, ShipTypes length) {
+        private int generateShips(int numShips, ShipTypes length) {
             int hits = 0;
 
             for(int i = 0; i < numShips; i++) {
-                Ship ship = new Ship(length, board);
+                ships.Add(new Ship(length, board));
                 hits += (int)length;
             }
 
@@ -72,16 +75,16 @@ namespace assignment1 {
             // starting with the bigger ships allows more placement options for
             // the smaller ships and less chance of colision having to generate
             // new random numbers slowing the game down
-            maxHits += GenerateShips(numCarriers, ShipTypes.Carrier);
-            maxHits += GenerateShips(numBattleships, ShipTypes.Battleship);
-            maxHits += GenerateShips(numSubs, ShipTypes.Submarine);
-            maxHits += GenerateShips(numDestroyers, ShipTypes.Destroyer);
+            maxHits += generateShips(numCarriers, ShipTypes.Carrier);
+            maxHits += generateShips(numBattleships, ShipTypes.Battleship);
+            maxHits += generateShips(numSubs, ShipTypes.Submarine);
+            maxHits += generateShips(numDestroyers, ShipTypes.Destroyer);
 
             return maxHits;
         }
 
         // gets coord info from user
-        private string PromptUser() {
+        private string promptUser() {
             Console.Write("\nPlease enter target coordinates (row then col no spaces)");
             return Regex.Replace(Console.ReadLine().ToUpper().Trim(), @"\s+", "");
         }
@@ -119,15 +122,17 @@ namespace assignment1 {
             return true;
         }
 
+        private void updateBoard(char replaceChar, String message, char targetRow, int targetCol) {
+            Console.WriteLine($"{message}");
+            board.SetCellUser(targetRow, targetCol, replaceChar);
+        }
+
         // basic player logic, validates input, sets cells on board returns hits
-        private bool PlayerTurn() {
+        private bool playerTurn() {
             char targetRow;
             int targetCol;
-            char replaceChar = 'X';
-            string message = "Miss, u suk";
-            bool hit = false;
 
-            string userInput = PromptUser();
+            string userInput = promptUser();
             if (!valid(userInput)) {
                 Console.WriteLine($"The input you entered: {userInput} is invalid. Please try again.");
                 return false;
@@ -137,16 +142,15 @@ namespace assignment1 {
             targetCol = int.Parse(userInput.Substring(1));
             Console.WriteLine($"Targeted Cell: {targetRow},{targetCol}");
 
-            if (board.GetCellUser(targetRow, targetCol) == 'S') {
-                message = "Hit!!!!!!!!!!!!!!! AAHHHHHHHHHHHHHH! BOOOOOOOOOOMMMMMMMMM!\n SPLASHHHHH!";
-                replaceChar = 'O';
-                hit = true;
+            foreach(Ship ship in ships) {
+                if (ship.IsHit(targetRow, targetCol)) {
+                    updateBoard('O', "Sir, we have a hit.", targetRow, targetCol);
+                    return true;
+                }
             }
 
-            Console.WriteLine($"{message}");
-            board.SetCellUser(targetRow, targetCol, replaceChar);
-            
-            return hit;
+            updateBoard('X', "Miss, u suk.", targetRow, targetCol);
+            return false;
         }
     }
 }
